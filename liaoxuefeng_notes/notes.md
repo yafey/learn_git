@@ -7,7 +7,7 @@ TODO ： 分支管理 、 标签管理 、自定义Git
 
 # 0.*. Windows 使用注意事项
 **千万不要使用Windows自带的记事本编辑任何文本文件。** 原因是 Microsoft 开发记事本的团队使用了一个非常弱智的行为来保存 UTF-8 编码的文件，他们自作聪明地在每个文件开头添加了 `0xefbbbf`（十六进制） 的字符，你会遇到很多不可思议的问题，比如，网页第一行可能会显示一个“?”，明明正确的程序一编译就报语法错误，等等，都是由记事本的弱智行为带来的。建议你下载 `Notepad++` 代替记事本，不但功能强大，而且免费！**记得把 Notepad++ 的默认编码设置为 `UTF-8 without BOM` 即可**：
-![set-utf8-notepad++](F:\____myCode\learn_git\liaoxuefeng_notes\img\set-utf8-notepad++.jpg)
+![set-utf8-notepad++](http://www.liaoxuefeng.com/files/attachments/001384907170801199e153159cc4a438bed8d255edf157a000/0)
 
 # 1. init 
 > {安装Git} + {创建版本库}
