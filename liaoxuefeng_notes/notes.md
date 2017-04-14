@@ -322,7 +322,7 @@ HEAD~100：往上100个版本。
     
     ```
 改为指向 add distributed：
-![git-head-move](F:\____myCode\learn_git\liaoxuefeng_notes\img\git-head-move.jpg)
+![git-head-move](http://www.liaoxuefeng.com/files/attachments/001384907594057a873c79f14184b45a1a66b1509f90b7a000/0)
 
 - 恢复到新版本: `git reflog` 用来记录你的每一次命令（查找 版本号）。
     ```
