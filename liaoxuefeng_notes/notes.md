@@ -7,7 +7,7 @@ TODO ： 分支管理 、 标签管理 、自定义Git
 
 # 0.*. Windows 使用注意事项
 **千万不要使用Windows自带的记事本编辑任何文本文件。** 原因是 Microsoft 开发记事本的团队使用了一个非常弱智的行为来保存 UTF-8 编码的文件，他们自作聪明地在每个文件开头添加了 `0xefbbbf`（十六进制） 的字符，你会遇到很多不可思议的问题，比如，网页第一行可能会显示一个“?”，明明正确的程序一编译就报语法错误，等等，都是由记事本的弱智行为带来的。建议你下载 `Notepad++` 代替记事本，不但功能强大，而且免费！**记得把 Notepad++ 的默认编码设置为 `UTF-8 without BOM` 即可**：
-![set-utf8-notepad++](https://github.com/yafey/learn_git/blob/liaoxuefeng.version/liaoxuefeng_notes/img/set-utf8-notepad++.jpg)
+![set-utf8-notepad++](F:\____myCode\learn_git\liaoxuefeng_notes\img\set-utf8-notepad++.jpg)
 
 # 1. init 
 > {安装Git} + {创建版本库}
@@ -322,7 +322,7 @@ HEAD~100：往上100个版本。
     
     ```
 改为指向 add distributed：
-![git-head-move](https://github.com/yafey/learn_git/blob/liaoxuefeng.version/liaoxuefeng_notes/img/git-head-move.jpg)
+![git-head-move](F:\____myCode\learn_git\liaoxuefeng_notes\img\git-head-move.jpg)
 
 - 恢复到新版本: `git reflog` 用来记录你的每一次命令（查找 版本号）。
     ```
@@ -375,6 +375,35 @@ HEAD~100：往上100个版本。
 
 
 
+
+
+# 3. 分支管理
+
+Git鼓励大量使用分支：
+
+- 查看分支：`git branch`
+- 创建分支：`git branch <name>`
+- 切换分支：`git checkout <name>`
+- 创建+切换分支：`git checkout -b <name>`
+- 合并某分支到当前分支：`git merge <name>` 
+    - *比如在 `master` 上， `git merge dev` 是 将 dev 分支 merge 到 master 分支。*
+- 删除分支：`git branch -d <name>`
+
+
+
+## 3.1. 分支管理的一些概念
+- 一开始的时候，`master` 分支是一条线，Git 用 `master` 指向最新的提交，再用 `HEAD` 指向 `master` ，就能确定 `当前分支`，以及 `当前分支的提交点`。
+    - **`HEAD` 严格来说不是指向提交，而是指向 `master`，`master` 才是指向提交的**，所以，`HEAD` 指向的就是当前分支。
+- 当我们创建新的分支，例如 `dev` 时，Git新建了一个指针叫 `dev`，指向 `master` 相同的提交，再把 `HEAD` 指向 `dev` ，就表示当前分支在 `dev` 上。
+    - **Git 创建一个分支很快，因为除了增加一个 `dev` 指针，改改 `HEAD` 的指向**，工作区的文件都没有任何变化！
+
+- 从现在开始，对工作区的修改和提交就是针对 `dev` 分支了，比如新提交一次后，dev 指针往前移动一步，而 `master` 指针不变：
+    ![git-br-dev-fd](http://www.liaoxuefeng.com/files/attachments/0013849088235627813efe7649b4f008900e5365bb72323000/0)
+
+- 假如我们在dev上的工作完成了，就可以把 `dev` 合并到 `master` 上。Git怎么合并呢？最简单的方法，**就是直接把 `master` 指向 `dev` 的当前提交，就完成了合并**：
+    - **Git合并分支也很快！就改改指针，工作区内容也不变！**
+
+![git-br-ff-merge](http://www.liaoxuefeng.com/files/attachments/00138490883510324231a837e5d4aee844d3e4692ba50f5000/0)
 
 
 
