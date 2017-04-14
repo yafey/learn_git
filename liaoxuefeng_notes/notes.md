@@ -377,6 +377,7 @@ HEAD~100：往上100个版本。
 
 
 
+
 # 3. 分支管理
 
 Git鼓励大量使用分支：
@@ -388,7 +389,92 @@ Git鼓励大量使用分支：
 - 合并某分支到当前分支：`git merge <name>` 
     - *比如在 `master` 上， `git merge dev` 是 将 dev 分支 merge 到 master 分支。*
 - 删除分支：`git branch -d <name>`
+- **解决冲突**  ： 打开需要合并的文件，找到冲突内容，选择一个版本保留。
+    - 当Git无法自动合并分支时，就必须首先解决冲突。解决冲突后，再提交，合并完成。
+    - 用 `git log --graph` 命令可以看到分支合并图。
+    ```
+    $ git log --graph --pretty=oneline --abbrev-commit
+    *   59bc1cb conflict fixed
+    |\
+    | * 75a857c AND simple
+    * | 400b400 & simple
+    |/
+    * fec145a branch test
+    ...
 
+    ```
+- 分支管理策略
+    - Git分支十分强大，在团队开发中应该充分应用。
+    - 合并分支时，加上 `--no-ff` 参数就可以用普通模式合并，合并后的历史有分支(Yafey注： **有点类似 解决冲突的感觉**)，能看出来曾经做过合并，而 `fast forward` 合并就看不出来曾经做过合并。
+    ```
+    # 准备合并 dev 分支，请注意 --no-ff 参数，表示禁用 Fast forward ：
+    ## 为什么采用 -no-ff 模式要加入参数 -m 的原因 ： 因为本次合并要创建一个新的 commit，所以加上 -m 参数，把 commit 描述写进去。
+    $ git merge --no-ff -m "merge with no-ff" dev
+    Merge made by the 'recursive' strategy.
+     readme.txt |    1 +
+     1 file changed, 1 insertion(+)
+    
+    
+    #合并后，我们用git log看看分支历史：
+    $ git log --graph --pretty=oneline --abbrev-commit
+    *   7825a50 merge with no-ff
+    |\
+    | * 6224937 add merge
+    |/
+    *   59bc1cb conflict fixed
+    ...
+
+    ```
+    - 分支策略
+    在实际开发中，我们应该按照几个基本原则进行分支管理：
+        - 首先，**master分支应该是非常稳定的**，也就是仅用来发布新版本，平时不能在上面干活；
+        - **那在哪干活呢？干活都在 dev 分支上，也就是说，dev 分支是不稳定的**，到某个时候，比如 1.0 版本发布时，再把 dev 分支合并到 master 上，在 master 分支发布 1.0 版本；
+        - 你和你的小伙伴们每个人都在 dev 分支上干活，**每个人都有自己的分支，时不时地往 dev 分支上合并就可以了**。
+        - 所以，团队合作的分支看起来就像这样：
+        ![git-br-policy](http://www.liaoxuefeng.com/files/attachments/001384909239390d355eb07d9d64305b6322aaf4edac1e3000/0)
+    
+- Bug 分支 （`stash`命令）
+    - 修复 bug 时，我们会通过创建新的 bug 分支进行修复，然后合并，最后删除；
+    - 当手头工作没有完成时，先把工作现场 `git stash` 一下，然后去修复 bug，修复后，再 `git stash pop`，回到工作现场。
+        - （Yafey 注： 有可能多次 stash 之后，分不出 stash list 中的东西， 我觉得还有一种做法是 可以创建一个新的分支，然后提交，再切换到当前分支，创建一个 bug 分支。）
+
+- Feature 分支 （`branch -D`强行删除分支）
+    - 开发一个新 feature，最好新建一个分支；
+    - 如果要丢弃一个没有被合并过的分支，可以通过 `git branch -D <name>` 强行删除。
+        - 删除没有合并的分支， 会报错： （Yafey 注： 实际开发的角度来说，不用删除 Feature 分支，万一头脑发热又需要了……）
+        ```
+        $ git branch -d feature-vulcan
+        error: The branch 'feature-vulcan' is not fully merged.
+        If you are sure you want to delete it, run 'git branch -D feature-vulcan'.
+        
+        ```
+- 多人协作
+    - 查看远程库信息，使用 `git remote -v`；（**如果没有推送权限，就看不到 push 的地址**）
+    ```
+    # 用 git remote -v 显示更详细的信息：
+    $ git remote -v
+    origin  git@github.com:michaelliao/learngit.git (fetch)
+    origin  git@github.com:michaelliao/learngit.git (push)
+
+    # 上面显示了可以抓取和推送的origin的地址。       如果没有推送权限，就看不到 push 的地址。
+    
+    ```
+    - 本地新建的分支如果不推送到远程，对其他人就是不可见的；
+    - 从本地推送分支，使用 `git push origin branch-name`，如果推送失败，先用 `git pull` 抓取远程的新提交；
+    - 在本地创建和远程分支对应的分支，使用 `git checkout -b branch-name origin/branch-name`，本地和远程分支的名称最好一致；
+    ```
+    # 如 ： 需要 pull 远程的 dev 分支，并在本地创建 分支名 为 dev 的分支。
+    $ git checkout -b dev origin/dev
+    
+    ```
+    - 建立本地分支和远程分支的关联，使 用 `git branch --set-upstream branch-name origin/branch-name`；
+    - 从远程抓取分支，使用 `git pull`，如果有冲突，要先处理冲突。
+    - **多人协作的工作模式** 通常是这样：
+        - 首先，可以试图用 `git push origin branch-name` 推送自己的修改；
+        - 如果推送失败，则因为远程分支比你的本地更新，需要先用 `git pull` 试图合并；
+        - 如果合并有冲突，则解决冲突，并在本地提交；
+        - 没有冲突或者解决掉冲突后，再用 `git push origin branch-name` 推送就能成功！
+        - 如果 `git pull` 提示 `“no tracking information”`，则说明本地分支和远程分支的链接关系没有创建，用命令 `git branch --set-upstream branch-name origin/branch-name`。
 
 
 ## 3.1. 分支管理的一些概念
@@ -405,7 +491,343 @@ Git鼓励大量使用分支：
 
 ![git-br-ff-merge](http://www.liaoxuefeng.com/files/attachments/00138490883510324231a837e5d4aee844d3e4692ba50f5000/0)
 
+```
+# 1. 首先 创建并切换到 dev 分支
+$ git checkout -b dev
+Switched to a new branch 'dev'
 
+# 2. 查看当前分支：当前分支前面会标一个*号。
+$ git branch
+* dev
+  master
+
+# 3. 改动文件（略） ， 并提交：
+$ git add readme.txt 
+$ git commit -m "branch test"
+[dev fec145a] branch test
+ 1 file changed, 1 insertion(+)
+
+# 4. 现在，dev 分支的工作完成，我们就可以 切换回 master 分支：
+$ git checkout master
+Switched to branch 'master'
+
+# 5. 现在，我们把 dev 分支的工作成果合并到 master 分支上：
+(Fast-forward信息，Git告诉我们，这次合并是“快进模式”，也就是直接把master指向dev的当前提交)
+$ git merge dev
+Updating d17efd8..fec145a
+Fast-forward    
+ readme.txt |    1 +
+ 1 file changed, 1 insertion(+)
+
+# 6. 合并完成后，就可以放心地删除dev分支了：
+$ git branch -d dev
+Deleted branch dev (was fec145a).
+
+# 7. 删除后，查看branch，就只剩下master分支了：
+$ git branch
+* master
+```
+
+
+## 3.2. `stash` 命令
+Git提供了一个 stash 功能，可以把当前工作现场“储藏”起来，等以后恢复现场后继续工作：
+之后，用 `git status` 查看工作区，就是干净的（除非有没有被Git管理的文件）。
+```
+$ git stash
+Saved working directory and index state WIP on dev: 6224937 add merge
+HEAD is now at 6224937 add merge
+```
+
+工作区是干净的，刚才的工作现场存到哪去了？用 `git stash list` 命令看看：
+```
+$ git stash list
+stash@{0}: WIP on dev: 6224937 add merge
+```
+
+
+工作现场还在，Git 把 stash 内容存在某个地方了，但是需要恢复一下，有两个办法：
+
+1. 一是用 `git stash apply` 恢复，**但是恢复后，stash 内容并不删**除，你需要用 `git stash drop` 来删除；
+    ```
+    # 可以多次 stash，恢复的时候，先用 git stash list 查看，然后恢复指定的 stash，用命令：
+    $ git stash list
+    $ git stash apply stash@{0}
+    $ git stash drop  stash@{0}
+
+    ```
+2. 【推荐】另一种方式是用 `git stash pop`，**恢复的同时把 stash 内容也删了**。
+    ```
+    $ git stash pop
+    # On branch dev
+    # Changes to be committed:
+    #   (use "git reset HEAD <file>..." to unstage)
+    #
+    #       new file:   hello.py
+    #
+    # Changes not staged for commit:
+    #   (use "git add <file>..." to update what will be committed)
+    #   (use "git checkout -- <file>..." to discard changes in working directory)
+    #
+    #       modified:   readme.txt
+    #
+    Dropped refs/stash@{0} (f624f8e5f082f2df2bed8a4e09c12fd2943bdd40)
+    
+    # 再用 git stash list 查看，就看不到任何stash内容了：
+    $ git stash list
+    
+    $
+    ```
+
+
+
+## 3.3. 删除分支 （本地 、 远程）
+1. 删除 合并过 的分支
+    ```
+    $ git branch -d [合并过 的分支名]
+    
+    ```
+2. 删除 未合并的 分支
+    ```
+    $ git branch -D [合并过 的分支名]
+    
+    ```
+3. 删除远程分支
+    > https://git-scm.com/book/zh/v1/Git-%E5%88%86%E6%94%AF-%E8%BF%9C%E7%A8%8B%E5%88%86%E6%94%AF
+
+    ```
+    $ git push origin :[要删除的远程分支名字]
+    
+    例如要删除 远程的github上的dev分支：
+    $ git push origin :dev 
+
+    ```
+
+
+
+
+# 4. 标签管理
+- 发布一个版本时，我们通常先在版本库中打一个标签（tag），这样，就唯一确定了打标签时刻的版本。将来无论什么时候，取某个标签的版本，就是把那个打标签的时刻的历史版本取出来。所以，标签也是版本库的一个快照。
+Git的标签虽然是版本库的快照，但其实它就是指向某个commit的指针（跟分支很像对不对？但是**分支可以移动，标签不能移动**），所以，创建和删除标签都是瞬间完成的。
+
+- Git有commit，为什么还要引入tag？
+**tag 就是一个让人容易记住的有意义的名字，它跟某个 commit id (SHA1) 绑在一起。**
+
+
+小结 ： 
+
+- 命令 `git tag <name>` 用于新建一个标签，**默认为 HEAD**，也可以指定一个 commit id；
+- `git tag -a <tagname> -m "blablabla..."` 可以指定标签信息；
+- `git tag -s <tagname> -m "blablabla..."` 可以用 PGP 签名标签；
+（用PGP签名的标签是不可伪造的，因为可以验证PGP签名。验证签名的方法比较复杂，这里就不介绍了。）
+- 命令 `git tag` 可以查看所有标签 （**注意，标签不是按时间顺序列出，而是按字母排序的。**）。
+- 操作标签
+    - 命令 `git push origin <tagname>` 可以推送一个本地标签；
+    - 命令 `git push origin --tags` 可以推送全部未推送过的本地标签；
+    - 命令 `git tag -d <tagname>` 可以删除一个本地标签；
+    - 命令 `git push origin :refs/tags/<tagname>` 可以删除一个远程标签。
+
+
+## 4.1. `tag` 命令简介
+敲命令 `git tag <name>` 就可以打一个新标签：
+```
+$ git tag v1.0
+
+```
+
+可以用命令 `git tag` 查看所有标签：
+```
+$ git tag
+v1.0
+```
+
+给以前的提交打上 tag ： 找到历史提交的commit id，然后打上就可以了。
+```
+$ git log --pretty=oneline --abbrev-commit
+7825a50 merge with no-ff
+6224937 add merge     <--- 这个地方忘记打 tag 了。
+59bc1cb conflict fixed
+400b400 & simple
+
+它对应的commit id是6224937，敲入命令：
+
+$ git tag v0.9 6224937
+
+
+再用命令 git tag 查看标签：注意，标签不是按时间顺序列出，而是按字母排序的。
+
+$ git tag
+v0.9
+v1.0
+```
+
+创建带有说明的标签，用-a指定标签名，-m指定说明文字：
+```
+$ git tag -a v0.1 -m "version 0.1 released" 3628164
+```
+
+用命令 `git show <tagname>` 可以看到说明文字：
+```
+$ git show v0.1
+tag v0.1
+Tagger: Michael Liao <askxuefeng@gmail.com>
+Date:   Mon Aug 26 07:28:11 2013 +0800
+
+version 0.1 released
+```
+还可以通过 `-s` 用私钥签名一个标签：
+```
+$ git tag -s v0.2 -m "signed version 0.2 released" fec145a
+
+
+签名采用 PGP 签名，因此，必须首先安装gpg（GnuPG），如果没有找到gpg，或者没有gpg密钥对，就会报错：
+如果报错，请参考 GnuPG 帮助文档配置 Key。
+
+gpg: signing failed: secret key not available
+error: gpg failed to sign the data
+error: unable to sign the tag
+```
+
+
+---
+删除本地标签
+```
+$ git tag -d v0.1
+Deleted tag 'v0.1' (was e078af9)
+```
+
+如果要推送某个标签到远程，使用命令 `git push origin <tagname>`：
+```
+$ git push origin v1.0
+Total 0 (delta 0), reused 0 (delta 0)
+To git@github.com:michaelliao/learngit.git
+ * [new tag]         v1.0 -> v1.0
+```
+
+或者，**一次性 推送 全部 尚未推送到 远程的 本地标签**：`git push origin --tags`
+```
+$ git push origin --tags
+Counting objects: 1, done.
+Writing objects: 100% (1/1), 554 bytes, done.
+Total 1 (delta 0), reused 0 (delta 0)
+To git@github.com:michaelliao/learngit.git
+ * [new tag]         v0.2 -> v0.2
+ * [new tag]         v0.9 -> v0.9
+```
+
+删除已经推送到远程的 标签 （远程标签）：
+
+```
+1. 先从本地删除：
+
+$ git tag -d v0.9
+Deleted tag 'v0.9' (was 6224937)
+
+
+2. 然后，从远程删除。删除命令也是push，但是格式如下：
+
+$ git push origin :refs/tags/v0.9
+To git@github.com:michaelliao/learngit.git
+ - [deleted]         v0.9
+
+3. 要看看是否真的从远程库删除了标签，可以登陆 GitHub 查看。
+```
+
+
+
+
+# 5. 自定义 Git
+已经配置了 `user.name` 和 `user.email`，实际上，Git还有很多可配置项。
+
+小结
+
+- 忽略某些文件时，需要编写`.gitignore`；
+   - 不需要从头写 `.gitignore` 文件，GitHub 已经为我们准备了各种配置文件， 可以直接在线浏览：https://github.com/github/gitignore
+   - 忽略文件的原则是：
+       1. 忽略操作系统自动生成的文件，比如缩略图等；
+       2. 忽略编译生成的中间文件、可执行文件等，也就是如果一个文件是通过另一个文件自动生成的，那自动生成的文件就没必要放进版本库，比如Java编译产生的.class文件；
+       3. 忽略你自己的带有敏感信息的配置文件，比如存放口令的配置文件。
+- `.gitignore`文件本身要放到版本库里，并且可以对`.gitignore`做版本管理！
+- 配置别名
+    - 配置文件 ： 
+        - 加上 `--global` 是针对 当前用户 起作用的。对应配置文件 `~/.gitconfig`
+        ```
+        $ cat .git/config 
+        [core]
+            repositoryformatversion = 0
+            filemode = true
+            bare = false
+            logallrefupdates = true
+            ignorecase = true
+            precomposeunicode = true
+        [remote "origin"]
+            url = git@github.com:michaelliao/learngit.git
+            fetch = +refs/heads/*:refs/remotes/origin/*
+        [branch "master"]
+            remote = origin
+            merge = refs/heads/master
+        [alias]
+            last = log -1
+        
+        ```                                                                                 
+        - 如果不加，那只针对当前的仓库起作用。每个仓库的Git配置文件都放在 `.git/config` 文件中。
+        ```
+        $ cat .gitconfig
+        [alias]
+            co = checkout
+            ci = commit
+            br = branch
+            st = status
+        [user]
+            name = Your Name
+            email = your@email.com
+        
+        ```
+
+
+
+比如，让 Git 显示颜色，会让命令输出看起来更醒目：这样，Git 会适当地显示不同的颜色。
+```
+$ git config --global color.ui true
+```
+
+
+## 5.1. 常见别名
+>`--global` 参数是全局参数，也就是这些命令在 **当前用户** 的所有Git仓库下都有用。 （一般你的工作电脑就一个用户，你自己独占整个硬盘，此时global=system）
+` --system` system是**整台电脑**
+
+`st` 就表示 `status` ， 以后敲 `git st` 就表示 `git status`
+```
+$ git config --global alias.st status
+```
+
+很多人都用`co`表示 `checkout`，`ci`表示`commit`，`br`表示`branch`：以后提交就可以简写成：`$ git ci -m "bala bala bala..."`
+
+```
+$ git config --global alias.co checkout
+$ git config --global alias.ci commit
+$ git config --global alias.br branch
+```
+
+命令`git reset HEAD file`可以把暂存区的修改撤销掉（unstage），重新放回工作区。既然是一个unstage操作，就可以配置一个unstage别名：
+```
+$ git config --global alias.unstage 'reset HEAD'
+
+```
+
+
+
+**直接替换用户配置文件 `~/.gitconfig` 中的别名 `[alias]`  ** 
+```
+[alias]
+    last = log -1
+    co = checkout
+    ci = commit
+    br = branch
+    st = status
+    unstage = reset HEAD
+    lg = "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
+```
+![git-lg](http://www.liaoxuefeng.com/files/attachments/00138492662982594cbd1a942114472aeeb5f0a502faed1000/0 "`git lg` 的效果")
 
 
 ---
