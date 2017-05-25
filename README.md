@@ -1,3 +1,33 @@
+
+# git 操作集锦
+## Git fetch和git pull的区别
+http://blog.csdn.net/jeffasd/article/details/53583267
+
+## Git中tag的用法
+http://blog.csdn.net/jeffasd/article/details/53583237
+
+
+GIT pull/fetch from specific tag
+https://stackoverflow.com/questions/3964368/git-pull-fetch-from-specific-tag
+
+
+## git: 行尾crlf换行符\n与\r\n处理，文件属性
+- git: 行尾crlf换行符\n与\r\n处理，文件属性  http://www.wy182000.com/2014/01/06/git-行尾crlf换行符n与rn处理/
+-  [转]多操作系统平台协同开发时 GIT 的注意事项: 不同操作系统中的换行符 http://blog.csdn.net/igorzhang/article/details/17420949
+
+
+## git merge是怎样判定冲突的？
+https://segmentfault.com/a/1190000003966242
+>这篇文章的结论有3：
+    - 3路合并
+    - revert是重新生成一个新的commit
+    - diff是和公共祖先diff
+除了第三个之外，其他两个都是看文档即可知道的。
+不知道你翻什么源码。
+最后，其实也并没有解决你自己的问题。在这里我给出一条解决方案：
+    - 尽量不要修改同一行上的代码。
+    - 如果要加薪的函数，最好每次在不同的位置加。
+
 # learn_git
 git 
 git使用杂记 https://idisfkj.github.io/2017/01/26/git%E4%BD%BF%E7%94%A8%E6%9D%82%E8%AE%B0/
