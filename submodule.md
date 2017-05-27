@@ -67,23 +67,17 @@ https://www.activestate.com/blog/2014/05/getting-git-submodule-track-branch
   - add submodule : `git submodule add --force -b BUAT <git url> <submodule path>`
   - Add a submodule which can't be removed from the index
   https://stackoverflow.com/questions/12218420/add-a-submodule-which-cant-be-removed-from-the-index
->  If the output adding a new submodule is:
-```
-  'FolderName' already exists in the index
-```
->  Tip the next commands
-```
+  >  If the output adding a new submodule is:
+  ```
+  	#'FolderName' already exists in the index
+  	# Tip the next commands
   git ls-files --stage
->```
->  The output will be something similar to:
-```
+  	# The output will be something similar to:
   160000 d023657a21c1bf05d0eeaac6218eb5cca8520d16  0  FolderName
-```
->Then, to remove the folder index tip:
-```
+  	# Then, to remove the folder index tip:
   git rm -r --cached FolderName
-```
->  Try again add the submodule
+  	#Try again add the submodule
+  ```
 
 
 
